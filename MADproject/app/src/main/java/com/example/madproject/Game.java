@@ -6,6 +6,9 @@ public class Game {
     private double rating;
     private int id;
 
+    public Game() {
+    }
+
     public Game(String name, String imageUrl, double rating, int id) {
         this.name = name;
         this.imageUrl = imageUrl;

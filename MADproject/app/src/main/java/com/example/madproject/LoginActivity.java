@@ -1,12 +1,15 @@
 package com.example.madproject;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.health.connect.datatypes.AppInfo;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.madproject.databinding.ActivityLoginBinding;
+import com.google.firebase.BuildConfig;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
@@ -20,6 +23,12 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
+
+//        if (!BuildConfig.DEBUG) {
+//            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//            finish();
+//            return;
+//        }
 
         binding.loginButton.setOnClickListener(v -> {
             String email = binding.emailInput.getText().toString().trim();

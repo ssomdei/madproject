@@ -69,8 +69,10 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
 
         if (isExploreView) {
             holder.btnRemove.setVisibility(View.GONE);
+            holder.btnAddToCart.setText("Add To Cart");
         } else {
             holder.btnRemove.setVisibility(View.VISIBLE);
+            holder.btnAddToCart.setText("Buy");
         }
     }
 

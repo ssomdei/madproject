@@ -1,6 +1,11 @@
 package com.example.madproject;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,6 +30,7 @@ public class LibraryActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
 
+    @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +49,11 @@ public class LibraryActivity extends AppCompatActivity {
         binding.gamesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         binding.gamesRecyclerView.setAdapter(gameAdapter);
 
+        binding.bottomNavigation.setSelectedItemId(R.id.navigation_library);
+        binding.bottomNavigation.setOnItemSelectedListener(this::onNavigationItemSelected);
+
+
+        Log.d("june", "onCreate: " + binding.bottomNavigation.getMaxItemCount());
         loadLibrary();
     }
 
@@ -61,6 +72,15 @@ public class LibraryActivity extends AppCompatActivity {
                     if (game != null)
                         libraryList.add(game);
                 }
+                binding.progressBar.setVisibility(View.GONE);
+                binding.gamesRecyclerView.setVisibility(View.VISIBLE);
+
+                if (libraryList.isEmpty()) {
+                    binding.noItemText.setVisibility(View.VISIBLE);
+                } else {
+                    binding.noItemText.setVisibility(View.GONE);
+                }
+
                 gameAdapter.notifyDataSetChanged();
             }
 
@@ -81,5 +101,25 @@ public class LibraryActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> Toast.makeText(this, "Removed from library", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> Toast
                         .makeText(this, "Failed to remove from library: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+
+    private boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.navigation_explore) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        } else if (itemId == R.id.navigation_library) {
+            return true;
+        } else if (itemId == R.id.navigation_cart) {
+            startActivity(new Intent(this, CartActivity.class));
+            finish();
+        } else if (itemId == R.id.navigation_profile) {
+            startActivity(new Intent(this, ProfileActivity.class));
+            finish();
+        }
+
+        return false;
     }
 }

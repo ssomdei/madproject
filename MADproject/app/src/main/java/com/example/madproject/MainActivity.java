@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -19,6 +21,7 @@ import com.example.madproject.databinding.ActivityMainBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -32,6 +35,12 @@ import java.util.List;
 import androidx.appcompat.widget.SearchView;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+    private String USER_KEY = "users";
+    private String CART_KEY = "cart";
+    private String NAME_KEY = "name";
+    private String BACKGROUND_IMAGE_KEY = "background_image";
+    private String RATING_KEY = "rating";
+    private String ID_KEY = "id";
     private ActivityMainBinding binding;
     private GameAdapter gameAdapter;
     private List<Game> gamesList;
@@ -55,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
 
         // Initialize Firebase
+        // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
@@ -65,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         gameAdapter.setOnRemoveListener(null);
         binding.gamesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         binding.gamesRecyclerView.setAdapter(gameAdapter);
+        binding.bottomNavigation.setSelectedItemId(R.id.navigation_explore);
 
         // Initialize Volley
         requestQueue = Volley.newRequestQueue(this);
@@ -93,6 +104,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                     gameJson.getDouble("rating"),
                                     gameJson.getInt("id"));
                             gamesList.add(game);
+                        }
+
+                        binding.progressBar.setVisibility(View.GONE);
+                        binding.gamesRecyclerView.setVisibility(View.VISIBLE);
+
+                        if (gamesList.isEmpty()) {
+                            binding.noItemText.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.noItemText.setVisibility(View.GONE);
                         }
 
                         gameAdapter.notifyDataSetChanged();
@@ -146,14 +166,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         int itemId = item.getItemId();
 
         if (itemId == R.id.navigation_explore) {
-            loadGames();
             return true;
         } else if (itemId == R.id.navigation_library) {
             startActivity(new Intent(this, LibraryActivity.class));
-            return true;
+            finish();
+        } else if (itemId == R.id.navigation_cart) {
+            startActivity(new Intent(this, CartActivity.class));
+            finish();
         } else if (itemId == R.id.navigation_profile) {
             startActivity(new Intent(this, ProfileActivity.class));
-            return true;
+            finish();
         }
 
         return false;
@@ -167,16 +189,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             return;
         }
         Log.d("MainActivity", "Attempting to add game to cart: " + game.getName() + " for user: " + userId);
-        mDatabase.child("users").child(userId).child("cart").child(String.valueOf(game.getId())).setValue(game)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Added to cart", Toast.LENGTH_SHORT).show();
-                    Log.d("MainActivity", "Game added to cart successfully: " + game.getName());
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to add to cart: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    Log.e("MainActivity",
-                            "Failed to add game to cart: " + game.getName() + ", Error: " + e.getMessage());
+
+        mDatabase.child(USER_KEY)
+                .child(userId)
+                .child(CART_KEY)
+                .child(String.valueOf(game.getId()))
+                .setValue(game, (error, ref) -> {
+                    Log.d("MainActivity", "done adding game");
                 });
+
     }
 
     @Override
