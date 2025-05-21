@@ -45,12 +45,20 @@
         android:text="Login"
         android:padding="12dp"/>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/googleLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login with google"
+        android:padding="12dp"/>
+
     <TextView
         android:id="@+id/registerLink"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Don't have an account? Register here"
         android:layout_marginTop="16dp"
-        android:textColor="@color/design_default_color_primary"/>
+        android:textColor="@color/design_default_color_primary"
+        android:padding="12dp"/>
 
 </LinearLayout> 

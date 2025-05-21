@@ -95,14 +95,48 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     try {
                         JSONArray results = response.getJSONArray("results");
                         gamesList.clear();
-
+                        String requirements = "";
                         for (int i = 0; i < results.length(); i++) {
                             JSONObject gameJson = results.getJSONObject(i);
+
+                            JSONArray platformsArray = gameJson.optJSONArray("platforms");
+                            if (platformsArray != null) {
+                                for (int j = 0; j < platformsArray.length(); j++) {
+                                    JSONObject platformObj = platformsArray.getJSONObject(j);
+                                    JSONObject reqObj = platformObj.optJSONObject("requirements_en");
+                                    if (reqObj != null) {
+                                        // If you only want the "minimum" part
+                                        requirements = reqObj.optString("minimum", "");
+                                        break; // Stop at first non-null requirement
+                                    }
+                                }
+                            }
+
+                            JSONArray genresArray = gameJson.getJSONArray("genres");
+                            StringBuilder genreBuilder = new StringBuilder();
+
+                            for (int j = 0; j < genresArray.length(); j++) {
+                                JSONObject genreObject = genresArray.getJSONObject(j);
+                                String genreName = genreObject.getString("name");
+                                genreBuilder.append(genreName);
+
+                                // If there are multiple genres, separate them with commas
+                                if (j < genresArray.length() - 1) {
+                                    genreBuilder.append(", ");
+                                }
+                            }
+
+                            String genre = genreBuilder.toString();
+
                             Game game = new Game(
                                     gameJson.getString("name"),
                                     gameJson.getString("background_image"),
                                     gameJson.getDouble("rating"),
-                                    gameJson.getInt("id"));
+                                    gameJson.getInt("id"),
+                                    genre,
+                                    requirements);
+
+                            Log.d("june1", "loadGames: " + gameJson.getString("genres"));
                             gamesList.add(game);
                         }
 
@@ -143,10 +177,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                     gameJson.getString("name"),
                                     gameJson.getString("background_image"),
                                     gameJson.getDouble("rating"),
-                                    gameJson.getInt("id"));
+                                    gameJson.getInt("id"),
+                                    "",
+                                    ""
+                            );
+
                             gamesList.add(game);
                         }
-
                         gameAdapter.notifyDataSetChanged();
                     } catch (JSONException e) {
                         Toast.makeText(this, "Error parsing game data", Toast.LENGTH_SHORT).show();
@@ -158,8 +195,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void onGameClick(Game game) {
-
-        Toast.makeText(this, "Selected: " + game.getName(), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, GamePageActivity.class);
+        intent.putExtra("gameData", game);
+        startActivity(intent);
+        finish();
     }
 
     private boolean onNavigationItemSelected(@NonNull MenuItem item) {
